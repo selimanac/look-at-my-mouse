@@ -1,0 +1,40 @@
+[bootstrap]
+main_collection = /main/main.collectionc
+
+[script]
+shared_state = 1
+
+[display]
+height = 540
+update_frequency = 60
+
+[android]
+input_method = HiddenInputField
+package = com.defold.example.basic3d
+
+[project]
+title = LookAtMouse
+dependencies#0 = https://github.com/abadonna/defold-orbit-camera/archive/refs/heads/main.zip
+
+[physics]
+type = 3D
+
+[osx]
+bundle_identifier = com.defold.example.basic3d
+
+[ios]
+bundle_identifier = com.defold.example.basic3d
+
+[render]
+clear_color_red = 1.0
+clear_color_green = 1.0
+clear_color_blue = 1.0
+clear_color_alpha = 0.0
+
+[native_extension]
+app_manifest = /vulkan.appmanifest
+
+[input]
+game_binding = /input/game.input_bindingc
+gamepads = /builtins/input/default.gamepadsc
+

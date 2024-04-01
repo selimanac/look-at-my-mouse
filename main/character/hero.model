@@ -1,0 +1,21 @@
+mesh: "/main/character/Rogue.glb"
+skeleton: "/main/character/Rogue.glb"
+animations: "/main/character/Rogue.glb"
+default_animation: "Idle"
+name: "hero"
+materials {
+  name: "rogue_texture"
+  material: "/main/character/model.material"
+  textures {
+    sampler: "tex0"
+    texture: "/main/character/rogue_texture.png"
+  }
+}
+materials {
+  name: "rogue_texture_no_skin"
+  material: "/main/character/model.material"
+  textures {
+    sampler: "tex0"
+    texture: "/main/character/rogue_texture.png"
+  }
+}

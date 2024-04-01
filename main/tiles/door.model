@@ -1,0 +1,13 @@
+mesh: "/main/models/door.glb"
+skeleton: ""
+animations: ""
+default_animation: ""
+name: "3-corner"
+materials {
+  name: "texture"
+  material: "/builtins/materials/model.material"
+  textures {
+    sampler: "tex0"
+    texture: "/main/models/dungeon_texture.png"
+  }
+}

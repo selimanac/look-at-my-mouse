@@ -1,0 +1,153 @@
+local tiled_importer = require "main.tiled_import"
+
+local DISPLAY_WIDTH = sys.get_config_int("display.width")
+local DISPLAY_HEIGHT = sys.get_config_int("display.height")
+--local MOVE_LEFT = hash("move_left")
+--local MOVE_RIGHT = hash("move_right")
+local MOVE_UP = hash("move_up")
+local MOVE_DOWN = hash("move_down")
+
+local J_MOVE_UP = hash("gamepad_lstick_up")
+local J_MOVE_DOWN = hash("gamepad_lstick_down")
+
+local camera_id = "/camera#camera"
+local hero_id = "/hero/hero"
+
+--[[
+local function a_screen_to_world(self)
+	self.mouse_screen_position.z = 0
+	local w, h = window.get_size()
+
+	-- The window.get_size() function will return the scaled window size,
+	-- ie taking into account display scaling (Retina screens on macOS for
+	-- instance). We need to adjust for display scaling in our calculation.
+	w = w / (w / DISPLAY_WIDTH)
+	h = h / (h / DISPLAY_HEIGHT)
+
+	-- https://defold.com/manuals/camera/#converting-mouse-to-world-coordinates
+	local inv = vmath.inv(self.camera_projection * self.camera_view)
+	self.mouse_world_position.x = (2 * self.mouse_screen_position.x / w) - 1
+	self.mouse_world_position.y = (2 * self.mouse_screen_position.y / h) - 1
+	self.mouse_world_position.z = (2 * self.mouse_screen_position.z) - 1
+	local x1 = self.mouse_world_position.x * inv.m00 + self.mouse_world_position.y * inv.m01 + self.mouse_world_position.z * inv.m02 + inv.m03
+	local y1 = self.mouse_world_position.x * inv.m10 + self.mouse_world_position.y * inv.m11 + self.mouse_world_position.z * inv.m12 + inv.m13
+	local z1 = self.mouse_world_position.x * inv.m20 + self.mouse_world_position.y * inv.m21 + self.mouse_world_position.z * inv.m22 + inv.m23
+	self.mouse_world_position.x = x1
+	self.mouse_world_position.y = y1
+	self.mouse_world_position.z = z1
+end
+
+]]
+
+-- From Rendly: https://github.com/klaytonkowalski/library-defold-rendy/blob/286e38718b5096b659ca0e829d75156868164359/rendy/rendy.lua#L258
+local function b_screen_to_world(self)
+	local inv = vmath.inv(self.camera_projection * self.camera_view)
+
+	-- Center
+	local center_x = self.mouse_screen_position.x - ((DISPLAY_WIDTH / 2))
+	local center_y = self.mouse_screen_position.y - ((DISPLAY_HEIGHT / 2))
+
+	-- Near & Far plane
+	local near_world_position = vmath.vector4(inv * vmath.vector4(center_x, center_y, -1, 1))
+	local far_world_position = vmath.vector4(inv * vmath.vector4(center_x, center_y, 1, 1))
+
+	near_world_position = near_world_position / near_world_position.w
+	far_world_position = far_world_position / far_world_position.w
+
+	local frustum_z = (self.mouse_screen_position.z - self.camera_nearZ) / (self.camera_farZ - self.camera_nearZ)
+	local world_position = vmath.lerp(frustum_z, near_world_position, far_world_position)
+
+	self.mouse_world_position.x = world_position.x
+	self.mouse_world_position.y = world_position.y
+	self.mouse_world_position.z = world_position.z
+end
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+	msg.post("@render:", "use_camera_projection")
+	msg.post(camera_id, "acquire_camera_focus")
+
+	tiled_importer.create_level()
+
+	self.camera_farZ             = go.get(camera_id, "far_z")
+	self.camera_nearZ            = go.get(camera_id, "near_z")
+	self.camera_projection       = go.get(camera_id, "projection")
+	self.camera_view             = go.get(camera_id, "view")
+
+	self.mouse_screen_position   = vmath.vector3()
+	self.mouse_screen_position.z = self.camera_farZ
+	self.mouse_world_position    = vmath.vector3()
+
+	self.hero_position           = go.get_position(hero_id)
+	self.hero_rotation_angle     = 0.0
+	self.hero_rotation           = 0.0
+
+	self.linear_velocity         = 0
+	self.linear_velocity_max     = 8
+	self.move                    = 0
+	self.distance                = 0
+	self.direction               = vmath.vector3()
+	self.play_properties         = { blend_duration = 0.2, playback_rate = 1.5 }
+	self.last_move               = 0
+
+	model.play_anim(hero_id, "Idle", go.PLAYBACK_LOOP_FORWARD, self.play_properties)
+end
+
+function update(self, dt)
+	-- ROTATE TO MOUSE
+	if self.mouse_screen_position then
+		self.camera_projection = go.get(camera_id, "projection")
+		--self.camera_view = go.get(camera_id, "view")
+		b_screen_to_world(self)
+	end
+
+	if self.mouse_world_position then
+		self.hero_rotation_angle = math.atan2((self.mouse_world_position.x - self.hero_position.x), (self.mouse_world_position.y - self.hero_position.y)) - math.pi
+		self.hero_rotation = vmath.quat_rotation_y(-self.hero_rotation_angle)
+		go.set_rotation(self.hero_rotation, hero_id)
+	end
+
+	-- MOVE STUFF
+	if self.move ~= 0 then
+		if self.linear_velocity < self.linear_velocity_max then
+			self.linear_velocity = self.linear_velocity + 0.3
+		end
+		self.distance = self.linear_velocity * self.move * dt
+		self.last_move = self.move
+	else
+		if self.linear_velocity > 0 then
+			self.linear_velocity = self.linear_velocity - 0.7
+			self.distance = self.linear_velocity * self.last_move * dt
+		else
+			self.linear_velocity = 0
+			self.distance = 0
+			self.last_move = 0
+		end
+	end
+	if self.distance ~= 0 then
+		self.direction = vmath.rotate(self.hero_rotation, vmath.vector3(0, 0, self.distance))
+		self.hero_position = self.hero_position + self.direction
+		go.set_position(self.hero_position, hero_id)
+	end
+
+	--[[local cam_rot = go.get_rotation(camera_id)
+	pprint(cam_rot)]]
+end
+
+function on_input(self, action_id, action)
+	self.mouse_screen_position.x = action.x
+	self.mouse_screen_position.y = action.y
+
+	if action_id == MOVE_UP then
+		self.move = action.released and 0 or 1
+	elseif action_id == MOVE_DOWN then
+		self.move = action.released and 0 or -1
+	end
+	if action_id == MOVE_UP or action_id == MOVE_DOWN then
+		if action.pressed then
+			model.play_anim(hero_id, "Running_A", go.PLAYBACK_LOOP_FORWARD, self.play_properties)
+		elseif action.released then
+			model.play_anim(hero_id, "Idle", go.PLAYBACK_LOOP_FORWARD, self.play_properties)
+		end
+	end
+end

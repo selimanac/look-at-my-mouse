@@ -1,0 +1,96 @@
+platforms:
+  armv7-ios:
+    context:
+      excludeLibs: [physics, Box2D]
+      excludeSymbols: []
+      symbols: []
+      libs: [physics_3d]
+      frameworks: []
+      linkFlags: []
+  arm64-ios:
+    context:
+      excludeLibs: [physics, Box2D, graphics]
+      excludeSymbols: [GraphicsAdapterOpenGL]
+      symbols: [GraphicsAdapterVulkan]
+      libs: [physics_3d, graphics_vulkan, MoltenVK]
+      frameworks: [Metal, IOSurface, QuartzCore]
+      linkFlags: []
+  x86_64-ios:
+    context:
+      excludeLibs: [physics, Box2D]
+      excludeSymbols: []
+      symbols: []
+      libs: [physics_3d]
+      frameworks: []
+      linkFlags: []
+  armv7-android:
+    context:
+      excludeLibs: [physics, Box2D, graphics]
+      excludeJars: []
+      excludeSymbols: [GraphicsAdapterOpenGL]
+      symbols: [GraphicsAdapterVulkan]
+      libs: [physics_3d, graphics_vulkan]
+      linkFlags: []
+      jetifier: true
+  arm64-android:
+    context:
+      excludeLibs: [physics, Box2D, graphics]
+      excludeJars: []
+      excludeSymbols: [GraphicsAdapterOpenGL]
+      symbols: [GraphicsAdapterVulkan]
+      libs: [physics_3d, graphics_vulkan]
+      linkFlags: []
+      jetifier: true
+  arm64-osx:
+    context:
+      excludeLibs: [physics, Box2D, graphics]
+      excludeSymbols: [GraphicsAdapterOpenGL]
+      symbols: [GraphicsAdapterVulkan]
+      libs: [physics_3d, graphics_vulkan, MoltenVK]
+      frameworks: [Metal, IOSurface, QuartzCore]
+      linkFlags: []
+  x86_64-osx:
+    context:
+      excludeLibs: [physics, Box2D, graphics]
+      excludeSymbols: [GraphicsAdapterOpenGL]
+      symbols: [GraphicsAdapterVulkan]
+      libs: [physics_3d, graphics_vulkan, MoltenVK]
+      frameworks: [Metal, IOSurface, QuartzCore]
+      linkFlags: []
+  x86_64-linux:
+    context:
+      excludeLibs: [physics, Box2D, graphics]
+      excludeSymbols: [GraphicsAdapterOpenGL]
+      symbols: [GraphicsAdapterVulkan]
+      libs: [physics_3d, graphics_vulkan, X11-xcb]
+      linkFlags: []
+  x86-win32:
+    context:
+      excludeLibs: [libphysics, libBox2D, libgraphics]
+      excludeSymbols: [GraphicsAdapterOpenGL]
+      symbols: [GraphicsAdapterVulkan]
+      libs: [libphysics_3d.lib, libgraphics_vulkan.lib, vulkan-1.lib]
+      linkFlags: []
+  x86_64-win32:
+    context:
+      excludeLibs: [libphysics, libBox2D, libgraphics]
+      excludeSymbols: [GraphicsAdapterOpenGL]
+      symbols: [GraphicsAdapterVulkan]
+      libs: [libphysics_3d.lib, libgraphics_vulkan.lib, vulkan-1.lib]
+      linkFlags: []
+  js-web:
+    context:
+      excludeLibs: [physics, Box2D]
+      excludeJsLibs: []
+      excludeSymbols: []
+      symbols: []
+      libs: [physics_3d]
+      linkFlags: []
+  wasm-web:
+    context:
+      excludeLibs: [physics, Box2D]
+      excludeJsLibs: []
+      excludeSymbols: []
+      symbols: []
+      libs: [physics_3d]
+      linkFlags: []
