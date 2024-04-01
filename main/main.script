@@ -97,7 +97,7 @@ function update(self, dt)
 	-- ROTATE TO MOUSE
 	if self.mouse_screen_position then
 		self.camera_projection = go.get(camera_id, "projection")
-		--self.camera_view = go.get(camera_id, "view")
+		self.camera_view = go.get(camera_id, "view")
 		b_screen_to_world(self)
 	end
 
